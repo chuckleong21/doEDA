@@ -23,5 +23,6 @@ Imports:
     ggplot2,
     purrr,
     magrittr,
-    rlang
+    rlang,
+    readxl
 RoxygenNote: 6.1.1
