@@ -4,14 +4,19 @@
 #'
 #' @return Return a ggplot object via \code{vis_dat} from \code{visdat}
 #'
-#' @import dplyr
+#' @importFrom dplyr group_by
+#' @importFrom dplyr group_split
+#' @importFrom dplyr group_keys
+#' @importFrom magrittr %>%
+#' @importFrom rlang .data
 #'
 #' @export
 #'
 #' @examples
 #' d <- data.frame(int = 1:10,
 #'                 string = letters[1:10],
-#'                 factor = factor(month.abb[1:10]))
+#'                 factor = factor(month.abb[1:10]),
+#'                 stringsAsFactors = FALSE)
 #' peek(d)
 peek <- function(.tbl_df) {
 
@@ -25,17 +30,17 @@ peek <- function(.tbl_df) {
 
         groupnm <-
                 diagnosis %>%
-                group_by(types) %>%
+                group_by(.data$types) %>%
                 group_keys %>%
                 unlist(use.names = F)
 
+        vartype <- sort(table(groupnm), decreasing = T)
+
         diagnosis <-
                 diagnosis %>%
-                group_by(types) %>%
+                group_by(.data$types) %>%
                 group_split() %>%
                 purrr::set_names(groupnm)
-
-        vartype <- sort(table(diagnosis$types), decreasing = T)
 
         list(peekture = list(dim = dim, variables = vartype, diagnosis = diagnosis, PK = PK)) %>%
                 list2env(envir = .GlobalEnv) %>%

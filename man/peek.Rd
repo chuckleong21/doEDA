@@ -18,6 +18,7 @@ Peek At Data As A Whole
 \examples{
 d <- data.frame(int = 1:10,
                 string = letters[1:10],
-                factor = factor(month.abb[1:10]))
+                factor = factor(month.abb[1:10]),
+                stringsAsFactors = FALSE)
 peek(d)
 }

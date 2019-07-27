@@ -21,5 +21,7 @@ Imports:
     visdat,
     dlookr,
     ggplot2,
-    purrr
+    purrr,
+    magrittr,
+    rlang
 RoxygenNote: 6.1.1
