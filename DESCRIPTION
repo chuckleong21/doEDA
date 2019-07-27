@@ -2,14 +2,24 @@ Package: doEDA
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Chuck",
+           family = "Leong",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: What license it uses
+           email = "chuckleong21@gmail.com")
+Description: This package wraps around the usual workflows for doing an exploratory data analysis.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/chuckleong21/doEDA
 BugReports: https://github.com/chuckleong21/doEDA/issues
+Suggests: 
+    testthat (>= 2.1.0),
+    spelling
+Language: en-US
+Imports: 
+    dplyr,
+    visdat,
+    dlookr,
+    ggplot2,
+    purrr
+RoxygenNote: 6.1.1
