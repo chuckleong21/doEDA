@@ -4,9 +4,6 @@
 #'
 #' @return Return a ggplot object via \code{vis_dat} from \code{visdat}
 #'
-#' @importFrom dplyr group_by
-#' @importFrom dplyr group_split
-#' @importFrom dplyr group_keys
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #'
@@ -30,16 +27,16 @@ peek <- function(.tbl_df) {
 
         groupnm <-
                 diagnosis %>%
-                group_by(.data$types) %>%
-                group_keys %>%
+                dplyr::group_by(.data$types) %>%
+                dplyr::group_keys() %>%
                 unlist(use.names = F)
 
         vartype <- sort(table(groupnm), decreasing = T)
 
         diagnosis <-
                 diagnosis %>%
-                group_by(.data$types) %>%
-                group_split() %>%
+                dplyr::group_by(.data$types) %>%
+                dplyr::group_split() %>%
                 purrr::set_names(groupnm)
 
         list(peekture = list(dim = dim, variables = vartype, diagnosis = diagnosis, PK = PK)) %>%

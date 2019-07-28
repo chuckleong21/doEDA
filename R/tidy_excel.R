@@ -1,7 +1,7 @@
 #' Import Tidy Excel Sheets into R
 #'
 #' @param file \strong{.xls} or \strong{.xlsx} file
-#' @param ... arguments passed down to \link[readxl]{read_excel()}
+#' @param ... arguments passed down to \link[readxl:read_excel]{read_excel()}
 #'
 #' @details This function wraps the steps for importing excel files having more
 #'   than 1 sheet through \code{mutate()} a \emph{sheetName} column after

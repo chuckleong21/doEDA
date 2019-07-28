@@ -24,5 +24,10 @@ Imports:
     purrr,
     magrittr,
     rlang,
-    readxl
+    readxl,
+    scales,
+    waffle,
+    treemap,
+    RColorBrewer,
+    grDevices
 RoxygenNote: 6.1.1

@@ -9,7 +9,7 @@ tidy_excel(file, ...)
 \arguments{
 \item{file}{\strong{.xls} or \strong{.xlsx} file}
 
-\item{...}{arguments passed down to \link[readxl]{read_excel()}}
+\item{...}{arguments passed down to \link[readxl:read_excel]{read_excel()}}
 }
 \value{
 A \link[tibble]{tibble}
