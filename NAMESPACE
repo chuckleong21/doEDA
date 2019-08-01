@@ -3,6 +3,7 @@
 export(hbarChart)
 export(peek)
 export(pieChart)
+export(theme_chn)
 export(tidy_excel)
 export(treeMap)
 export(vars)
