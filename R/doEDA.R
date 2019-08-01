@@ -80,8 +80,8 @@ waffleChart <- function(.tbl_df, .group, divisor = NULL, tiles = 100, title = NU
                         size = 2, palette = "Set2", legend_pos = "right") {
     # symbol and string
     group <- rlang::enexpr(.group)
-    if(rlang::is_symbol(group)) group <- rlang::sym(group)
-    group <- rlang::enquo(.group)
+    if(!rlang::is_symbol(group)) group <- rlang::sym(group)
+    group <- rlang::enquo(group)
 
     # palette arg
     lvl <- levels(as.factor(dplyr::pull(.tbl_df, !!group)))
@@ -128,16 +128,17 @@ waffleChart <- function(.tbl_df, .group, divisor = NULL, tiles = 100, title = NU
 #'   for grouping. They are the unit groups. On the other hand, .outerGroup is a
 #'   list of variables shorter than .innerGroup. In turn .outerGroup is at an
 #'   outer level and .innerGroup is a subset of .outerGroup. All the variables
-#'   passed into .innerGroup and .outerGroup must be selected by vars() as they
-#'   are quosures inside the function body. You could modify the labels for y
-#'   axis using \code{scale_y_continuous()} since it is a ggplot object.
+#'   passed into .innerGroup and .outerGroup must be selected by \code{vars()}
+#'   as they are quosures inside the function body. You could modify the labels
+#'   for y axis using \code{scale_y_continuous()} since it is a ggplot object.
 #'
 #' @return A \strong{ggplot} object
 #' @importFrom dplyr vars
+#' @name vars
+#' @export vars
 #' @export
 #'
 #' @examples
-#' library(dplyr)
 #' hbarChart(invest, vars(gender, age, investment, invest_plan, perc),
 #' vars(investment, invest_plan), age, perc) +
 #' ggplot2::facet_wrap(vars(invest_plan)) +

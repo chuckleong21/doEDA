@@ -21,18 +21,20 @@ test_that("waffleChart", {
         expect_is(palette_name, "ggplot")
         expect_is(palette_name, "ggplot")
         expect_equal(palette_name, color_names)
-        expect_error(waffleChart(iris, "Species", divisor = 1))
+        expect_equal(waffleChart(iris, "Species"), waffleChart(iris, Species))
+        expect_equal(waffleChart(iris, Species, divisor = nrow(iris) / 100),
+                     waffleChart(iris, Species))
 })
 
 test_that("horizontal bar chart", {
         matinvest <- as.matrix(invest)
-        gg <- hbarChart(invest, dplyr::vars(gender, age),
-                        dplyr::vars(age), .xVar = gender, age)
-        err <- quote({hbarChart(matinvest, dplyr::vars(gender, age),
-                                dplyr::vars(age), gender, age)})
+        gg <- hbarChart(invest, vars(gender, age),
+                        vars(age), .xVar = gender, age)
+        err <- quote({hbarChart(matinvest, vars(gender, age),
+                                vars(age), gender, age)})
         expect_error(eval(err))
         expect_is(gg, "ggplot")
-        expect_error(hbarChart(invest, dplyr::vars(gender, age),
-                               dplyr::vars(investment, age), gender, age))
+        expect_error(hbarChart(invest, vars(gender, age),
+                               vars(investment, age), gender, age))
 })
 
