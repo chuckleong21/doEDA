@@ -5,7 +5,7 @@
 \title{Fast tree map wrapper}
 \usage{
 treeMap(.tbl_df, .group, index, type = "index", sizeby = "n",
-  fontfamily.labels, fontfamily.title, title = NULL)
+  fontfamily.labels, fontfamily.title, title = NULL, ...)
 }
 \arguments{
 \item{.tbl_df}{A data frame}
@@ -23,6 +23,8 @@ treeMap(.tbl_df, .group, index, type = "index", sizeby = "n",
 \item{fontfamily.title}{A string for font type}
 
 \item{title}{A title}
+
+\item{...}{arguments passed down to \code{treemap()}}
 }
 \value{
 A \strong{ggplot} object

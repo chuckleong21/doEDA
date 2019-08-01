@@ -6,8 +6,6 @@
 #'
 #' @param .tbl_df A data frame
 #' @param .group A \emph{factor} variable
-#' @param width \code{\link[ggplot2:geom_col]{geom_col()}} argument to control
-#'   the bar width
 #' @param start \code{\link[ggplot2:coord_polar]{coord_polar()}} argument to
 #'   control where the counting position starts. Defaults at 0
 #' @param direction 1, clockwise; -1, anticlockwise
@@ -21,11 +19,19 @@
 #'
 #' @examples
 #' pieChart(invest, gender)
-pieChart <- function(.tbl_df, .group, width = 1,
-                     start = 0, direction = 1, labelon = TRUE, ...) {
-    group <- dplyr::enquo(.group)
+pieChart <- function(.tbl_df, .group, start = 0, direction = 1, labelon = TRUE, ...) {
+    group <- rlang::enexpr(.group)
+    if(!rlang::is_symbol(group)) group <- rlang::sym(group)
+    group <- rlang::enquo(group)
 
-   p <-  .tbl_df %>%
+    w <- "pieChart() is not preferred for group with >10 factor levels."
+    groupc <- rlang::quo_name(group)
+    if(is.null(levels(.tbl_df[[groupc]]))) {
+        .tbl_df[[groupc]] <- as.factor(.tbl_df[[groupc]])
+        if(nlevels(.tbl_df[[groupc]]) > 10) warning(w, call. = FALSE)
+    }
+
+    p <-  .tbl_df %>%
         dplyr::group_by(!!group) %>%
         dplyr::count() %>%
         dplyr::ungroup() %>%
@@ -33,12 +39,12 @@ pieChart <- function(.tbl_df, .group, width = 1,
         dplyr::arrange(dplyr::desc(!!group)) %>%
         ggplot2::ggplot() +
         ggplot2::geom_bar(ggplot2::aes(x = "", y = .data$prop, fill = !!group),
-                          stat = "identity", width = width) +
+                          stat = "identity") +
         ggplot2::coord_polar("y", start = start, direction = direction)
    if(labelon) {
        p + ggplot2::geom_text(ggplot2::aes(x = 1, y = cumsum(.data$prop) - .data$prop / 2,
                                        label = scales::percent(.data$prop))) +
-           ggplot2::labs(x = "", y = dplyr::quo_name(group), ...)
+           ggplot2::labs(x = "", y = groupc, ...)
    } else p
 }
 
@@ -51,6 +57,8 @@ pieChart <- function(.tbl_df, .group, width = 1,
 #' @param .tbl_df A data frame
 #' @param .group A \emph{factor} variable
 #' @param divisor A non-zero positive number
+#' @param tiles the default number of 100 for the number of tiles displayed on
+#'   plotting canvas if \code{divisor = NULL}
 #' @param title A string
 #' @param size A number.
 #' @param palette A character vector or a string
@@ -59,8 +67,8 @@ pieChart <- function(.tbl_df, .group, width = 1,
 #' @details A wrapper function inherits from
 #'   \code{\link[waffle:waffle]{waffle()}}. It spares the data wrangling process
 #'   for percentage computation and assemble for a named vector. The wrapper
-#'   function also internally deals with conflict between the number of factor levels and
-#'   the number of colors supplied to palette via
+#'   function also internally deals with conflict between the number of factor
+#'   levels and the number of colors supplied to palette via
 #'   \link[RColorBrewer]{RColorBrewer}.
 #'
 #' @return A \strong{ggplot} object
@@ -68,23 +76,38 @@ pieChart <- function(.tbl_df, .group, width = 1,
 #'
 #' @examples
 #' waffleChart(invest, age, divisor = 100)
-waffleChart <- function(.tbl_df, .group, divisor = 8, title = "",
+waffleChart <- function(.tbl_df, .group, divisor = NULL, tiles = 100, title = NULL,
                         size = 2, palette = "Set2", legend_pos = "right") {
-    group <- dplyr::enquo(.group)
+    # symbol and string
+    group <- rlang::enexpr(.group)
+    if(rlang::is_symbol(group)) group <- rlang::sym(group)
+    group <- rlang::enquo(.group)
 
+    # palette arg
     lvl <- levels(as.factor(dplyr::pull(.tbl_df, !!group)))
-    maxcolors <- RColorBrewer::brewer.pal.info[palette, "maxcolors"]
-    rcolors <- ifelse(length(palette) > 1 & lvl > maxcolors,
-                      palette,
-                      RColorBrewer::brewer.pal(n = length(lvl), name = palette))
+    maxcolors <- ifelse(length(palette) > 1, length(palette),
+                        RColorBrewer::brewer.pal.info[palette, "maxcolors"])
+    if(length(palette) > 1 & length(lvl) >= maxcolors) {
+        rcolors <- palette
+    } else {
+        rcolors <- RColorBrewer::brewer.pal(n = length(lvl), name = palette)
+    }
+
+    # get the part
     x <- .tbl_df %>%
         dplyr::group_by(!!group) %>%
         dplyr::count() %>%
         dplyr::ungroup() %>%
         dplyr::pull(.data$n) %>%
         purrr::set_names(nm = lvl)
+    # pick a divisor
+    if(is.null(divisor)) divisor <- sum(x) / tiles
     x <- x / divisor
-    waffle::waffle(x, title = title, colors = rcolors, size = size, legend_pos = legend_pos)
+    # draw waffle
+    p <- waffle::waffle(x, colors = rcolors, size = size, legend_pos = legend_pos)
+    if(is.null(title)) {
+        p
+    } else p + ggplot2::ggtitle(title)
 }
 
 #' Visualize proportions of subgroup samples
@@ -122,8 +145,8 @@ waffleChart <- function(.tbl_df, .group, divisor = 8, title = "",
 hbarChart <- function(.tbl_df, .innerGroup, .outerGroup, .xVar, .fill) {
     stopifnot(is.list(.innerGroup), is.list(.outerGroup),
               length(.outerGroup) < length(.innerGroup))
-    xVar <- dplyr::enquo(.xVar)
-    fill <- dplyr::enquo(.fill)
+    xVar <- rlang::enquo(.xVar)
+    fill <- rlang::enquo(.fill)
 
     .tbl_df %>%
         dplyr::group_by(!!!.innerGroup) %>%
@@ -134,7 +157,8 @@ hbarChart <- function(.tbl_df, .innerGroup, .outerGroup, .xVar, .fill) {
         dplyr::ungroup() %>%
         ggplot2::ggplot(ggplot2::aes(x = !!xVar, y = .data$prop, fill = !!fill)) +
         ggplot2::geom_col(position = "fill") +
-        ggplot2::coord_flip()
+        ggplot2::coord_flip() +
+        ggplot2::ylab(rlang::quo_name(xVar))
 }
 
 #' Fast tree map wrapper
@@ -153,6 +177,7 @@ hbarChart <- function(.tbl_df, .innerGroup, .outerGroup, .xVar, .fill) {
 #' @param fontfamily.labels A string for font type
 #' @param fontfamily.title A string for font type
 #' @param title A title
+#' @param ... arguments passed down to \code{treemap()}
 #'
 #' @details Other than most of the arguments inherited from treemap(), treeMap()
 #'   embbeded a default font type, \emph{Helvetica} for Latin characters and
@@ -169,7 +194,7 @@ hbarChart <- function(.tbl_df, .innerGroup, .outerGroup, .xVar, .fill) {
 #' @examples
 #' treeMap(invest, investment, "investment")
 treeMap <- function(.tbl_df, .group, index, type = "index", sizeby = "n",
-                    fontfamily.labels, fontfamily.title, title = NULL) {
+                    fontfamily.labels, fontfamily.title, title = NULL, ...) {
     group <- dplyr::enquo(.group)
     grouplbls <- levels(as.factor(dplyr::pull(.tbl_df, !!group)))
 
@@ -191,7 +216,7 @@ treeMap <- function(.tbl_df, .group, index, type = "index", sizeby = "n",
                 type = type,
                 fontfamily.labels = fontfamily.labels,
                 fontfamily.title = fontfamily.title,
-                title = title)
+                title = title, ...)
 }
 
 #' Data on Investment preferences

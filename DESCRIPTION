@@ -28,7 +28,7 @@ Imports:
     rlang,
     readxl,
     scales,
-    waffle,
+    waffle (>= 1.0.1),
     treemap,
     RColorBrewer,
     grDevices

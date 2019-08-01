@@ -4,8 +4,8 @@
 \alias{waffleChart}
 \title{Draw a fast waffle chart}
 \usage{
-waffleChart(.tbl_df, .group, divisor = 8, title = "", size = 2,
-  palette = "Set2", legend_pos = "right")
+waffleChart(.tbl_df, .group, divisor = NULL, tiles = 100,
+  title = NULL, size = 2, palette = "Set2", legend_pos = "right")
 }
 \arguments{
 \item{.tbl_df}{A data frame}
@@ -13,6 +13,9 @@ waffleChart(.tbl_df, .group, divisor = 8, title = "", size = 2,
 \item{.group}{A \emph{factor} variable}
 
 \item{divisor}{A non-zero positive number}
+
+\item{tiles}{the default number of 100 for the number of tiles displayed on
+plotting canvas if \code{divisor = NULL}}
 
 \item{title}{A string}
 
@@ -34,8 +37,8 @@ A \strong{ggplot} object
 A wrapper function inherits from
   \code{\link[waffle:waffle]{waffle()}}. It spares the data wrangling process
   for percentage computation and assemble for a named vector. The wrapper
-  function also internally deals with conflict between the number of factor levels and
-  the number of colors supplied to palette via
+  function also internally deals with conflict between the number of factor
+  levels and the number of colors supplied to palette via
   \link[RColorBrewer]{RColorBrewer}.
 }
 \examples{

@@ -4,16 +4,13 @@
 \alias{pieChart}
 \title{Draw a fast pie chart}
 \usage{
-pieChart(.tbl_df, .group, width = 1, start = 0, direction = 1,
-  labelon = TRUE, ...)
+pieChart(.tbl_df, .group, start = 0, direction = 1, labelon = TRUE,
+  ...)
 }
 \arguments{
 \item{.tbl_df}{A data frame}
 
 \item{.group}{A \emph{factor} variable}
-
-\item{width}{\code{\link[ggplot2:geom_col]{geom_col()}} argument to control
-the bar width}
 
 \item{start}{\code{\link[ggplot2:coord_polar]{coord_polar()}} argument to
 control where the counting position starts. Defaults at 0}
