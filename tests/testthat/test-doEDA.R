@@ -28,13 +28,11 @@ test_that("waffleChart", {
 
 test_that("horizontal bar chart", {
         matinvest <- as.matrix(invest)
-        gg <- hbarChart(invest, vars(gender, age),
-                        vars(age), .xVar = gender, age)
-        err <- quote({hbarChart(matinvest, vars(gender, age),
-                                vars(age), gender, age)})
+        gg <- hbarChart(invest, gender, age, columns = 2, .xVar = gender, .fill = age)
+        err <- quote({hbarChart(matinvest, gender, age,
+                                columns = 2, .xVar = gender, .fill = age)})
         expect_error(eval(err))
         expect_is(gg, "ggplot")
-        expect_error(hbarChart(invest, vars(gender, age),
-                               vars(investment, age), gender, age))
+        expect_error(hbarChart(invest, gender, age, columns = 3, .xVar = gender, .fill = age))
 })
 

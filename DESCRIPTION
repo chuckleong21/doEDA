@@ -1,6 +1,6 @@
 Package: doEDA
 Title: Workflow Wrapper For Visualizations
-Version: 0.0.0.9001
+Version: 0.0.1
 Authors@R: 
     person(given = "Chuck",
            family = "Leong",

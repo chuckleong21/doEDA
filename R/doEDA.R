@@ -16,35 +16,39 @@
 #'
 #' @return A \strong{ggplot} object
 #' @export
+#' @importFrom dplyr group_by count ungroup mutate arrange desc pull
+#' @importFrom ggplot2 ggplot aes geom_bar coord_polar geom_text labs ggtitle
+#' @importFrom ggplot2 geom_col coord_flip
+#' @importFrom rlang enexpr enquo enquos is_symbol sym quo_name
 #'
 #' @examples
 #' pieChart(invest, gender)
 pieChart <- function(.tbl_df, .group, start = 0, direction = 1, labelon = TRUE, ...) {
-    group <- rlang::enexpr(.group)
-    if(!rlang::is_symbol(group)) group <- rlang::sym(group)
-    group <- rlang::enquo(group)
+    group <- enexpr(.group)
+    if(!is_symbol(group)) group <- sym(group)
+    group <- enquo(group)
 
     w <- "pieChart() is not preferred for group with >10 factor levels."
-    groupc <- rlang::quo_name(group)
+    groupc <- quo_name(group)
     if(is.null(levels(.tbl_df[[groupc]]))) {
         .tbl_df[[groupc]] <- as.factor(.tbl_df[[groupc]])
         if(nlevels(.tbl_df[[groupc]]) > 10) warning(w, call. = FALSE)
     }
 
     p <-  .tbl_df %>%
-        dplyr::group_by(!!group) %>%
-        dplyr::count() %>%
-        dplyr::ungroup() %>%
-        dplyr::mutate(prop = .data$n / sum(.data$n)) %>%
-        dplyr::arrange(dplyr::desc(!!group)) %>%
-        ggplot2::ggplot() +
-        ggplot2::geom_bar(ggplot2::aes(x = "", y = .data$prop, fill = !!group),
+        group_by(!!group) %>%
+        count() %>%
+        ungroup() %>%
+        mutate(prop = .data$n / sum(.data$n)) %>%
+        arrange(desc(!!group)) %>%
+        ggplot() +
+        geom_bar(aes(x = "", y = .data$prop, fill = !!group),
                           stat = "identity") +
-        ggplot2::coord_polar("y", start = start, direction = direction)
+        coord_polar("y", start = start, direction = direction)
    if(labelon) {
-       p + ggplot2::geom_text(ggplot2::aes(x = 1, y = cumsum(.data$prop) - .data$prop / 2,
+       p + geom_text(aes(x = 1, y = cumsum(.data$prop) - .data$prop / 2,
                                        label = scales::percent(.data$prop))) +
-           ggplot2::labs(x = "", y = groupc, ...)
+           labs(x = "", y = groupc, ...)
    } else p
 }
 
@@ -73,32 +77,33 @@ pieChart <- function(.tbl_df, .group, start = 0, direction = 1, labelon = TRUE, 
 #'
 #' @return A \strong{ggplot} object
 #' @export
+#' @importFrom RColorBrewer brewer.pal brewer.pal.info
 #'
 #' @examples
 #' waffleChart(invest, age, divisor = 100)
 waffleChart <- function(.tbl_df, .group, divisor = NULL, tiles = 100, title = NULL,
                         size = 2, palette = "Set2", legend_pos = "right") {
     # symbol and string
-    group <- rlang::enexpr(.group)
-    if(!rlang::is_symbol(group)) group <- rlang::sym(group)
-    group <- rlang::enquo(group)
+    group <- enexpr(.group)
+    if(!is_symbol(group)) group <- sym(group)
+    group <- enquo(group)
 
     # palette arg
-    lvl <- levels(as.factor(dplyr::pull(.tbl_df, !!group)))
+    lvl <- levels(as.factor(pull(.tbl_df, !!group)))
     maxcolors <- ifelse(length(palette) > 1, length(palette),
-                        RColorBrewer::brewer.pal.info[palette, "maxcolors"])
+                        brewer.pal.info[palette, "maxcolors"])
     if(length(palette) > 1 & length(lvl) >= maxcolors) {
         rcolors <- palette
     } else {
-        rcolors <- RColorBrewer::brewer.pal(n = length(lvl), name = palette)
+        rcolors <- brewer.pal(n = length(lvl), name = palette)
     }
 
     # get the part
     x <- .tbl_df %>%
-        dplyr::group_by(!!group) %>%
-        dplyr::count() %>%
-        dplyr::ungroup() %>%
-        dplyr::pull(.data$n) %>%
+        group_by(!!group) %>%
+        count() %>%
+        ungroup() %>%
+        pull(.data$n) %>%
         purrr::set_names(nm = lvl)
     # pick a divisor
     if(is.null(divisor)) divisor <- sum(x) / tiles
@@ -107,7 +112,7 @@ waffleChart <- function(.tbl_df, .group, divisor = NULL, tiles = 100, title = NU
     p <- waffle::waffle(x, colors = rcolors, size = size, legend_pos = legend_pos)
     if(is.null(title)) {
         p
-    } else p + ggplot2::ggtitle(title)
+    } else p + ggtitle(title)
 }
 
 #' Visualize proportions of subgroup samples
@@ -116,13 +121,11 @@ waffleChart <- function(.tbl_df, .group, divisor = NULL, tiles = 100, title = NU
 #'   creating horizontal bar chart in order to visualize subgroup distributions.
 #'
 #' @param .tbl_df A data frame
-#' @param .innerGroup A list of variable names wrapped with
-#'   \code{\link[dplyr:vars]{vars()}}
-#' @param .outerGroup A list of variable names wrapped with
-#'   \code{\link[dplyr:vars]{vars()}}
-#' @param .xVar One of the variables from .innerGroup excluding the .fill
-#'   variable
-#' @param .fill One of the variables from .innerGroup
+#' @param ... fixed columns names supplied from \code{.tbl_df}
+#' @param columns numeric vector that has a length shorter than the supplied by
+#'   \code{...}
+#' @param .xVar One of the variables from ... besides the .fill variable
+#' @param .fill One of the variables from ...
 #'
 #' @details .innerGroup should, as the argument suggests, be a list of variables
 #'   for grouping. They are the unit groups. On the other hand, .outerGroup is a
@@ -133,33 +136,36 @@ waffleChart <- function(.tbl_df, .group, divisor = NULL, tiles = 100, title = NU
 #'   for y axis using \code{scale_y_continuous()} since it is a ggplot object.
 #'
 #' @return A \strong{ggplot} object
-#' @importFrom dplyr vars
-#' @name vars
-#' @export vars
 #' @export
+#' @importFrom ggplot2 geom_col coord_flip facet_wrap scale_color_brewer
 #'
 #' @examples
-#' hbarChart(invest, vars(gender, age, investment, invest_plan, perc),
-#' vars(investment, invest_plan), age, perc) +
-#' ggplot2::facet_wrap(vars(invest_plan)) +
-#' ggplot2::scale_fill_brewer(type = "qual", palette = "Blues")
-hbarChart <- function(.tbl_df, .innerGroup, .outerGroup, .xVar, .fill) {
-    stopifnot(is.list(.innerGroup), is.list(.outerGroup),
-              length(.outerGroup) < length(.innerGroup))
-    xVar <- rlang::enquo(.xVar)
-    fill <- rlang::enquo(.fill)
+#' library(dplyr)
+#' library(ggplot2)
+#'
+#' hbarChart(invest, gender, age, investment, invest_plan, perc,
+#' columns = 3:4, .xVar = age, .fill = perc) +
+#' facet_wrap(vars(invest_plan)) +
+#' scale_fill_brewer(type = "qual", palette = "Blues")
+hbarChart <- function(.tbl_df, ..., columns, .xVar, .fill) {
+    innergroup <- enquos(...)
+    outergroup <- innergroup[columns]
+    stopifnot(is.list(innergroup), is.numeric(columns),
+              length(outergroup) < length(innergroup))
+    xVar <- enquo(.xVar)
+    fill <- enquo(.fill)
 
     .tbl_df %>%
-        dplyr::group_by(!!!.innerGroup) %>%
-        dplyr::count() %>%
-        dplyr::ungroup() %>%
-        dplyr::group_by(!!!.outerGroup) %>%
-        dplyr::mutate(prop = .data$n / sum(.data$n)) %>%
-        dplyr::ungroup() %>%
-        ggplot2::ggplot(ggplot2::aes(x = !!xVar, y = .data$prop, fill = !!fill)) +
-        ggplot2::geom_col(position = "fill") +
-        ggplot2::coord_flip() +
-        ggplot2::ylab(rlang::quo_name(xVar))
+        group_by(!!!innergroup) %>%
+        count() %>%
+        ungroup() %>%
+        group_by(!!!outergroup) %>%
+        mutate(prop = .data$n / sum(.data$n)) %>%
+        ungroup() %>%
+        ggplot(aes(x = !!xVar, y = .data$prop, fill = !!fill)) +
+        geom_col(position = "fill") +
+        coord_flip() +
+        labs(y = "")
 }
 
 #' Fast tree map wrapper
@@ -196,8 +202,8 @@ hbarChart <- function(.tbl_df, .innerGroup, .outerGroup, .xVar, .fill) {
 #' treeMap(invest, investment, "investment")
 treeMap <- function(.tbl_df, .group, index, type = "index", sizeby = "n",
                     fontfamily.labels, fontfamily.title, title = NULL, ...) {
-    group <- dplyr::enquo(.group)
-    grouplbls <- levels(as.factor(dplyr::pull(.tbl_df, !!group)))
+    group <- enquo(.group)
+    grouplbls <- levels(as.factor(pull(.tbl_df, !!group)))
 
     if(missing(fontfamily.labels) | missing(fontfamily.title)) {
         if(mean(grepl("^[\u4e00-\u9fa5]{0,}$", grouplbls)) > .5) {
@@ -208,10 +214,10 @@ treeMap <- function(.tbl_df, .group, index, type = "index", sizeby = "n",
     if(is.null(title)) title <- ""
 
     .tbl_df %>%
-        dplyr::group_by(!!group) %>%
-        dplyr::count() %>%
-        dplyr::arrange(dplyr::desc(.data$n)) %>%
-        dplyr::ungroup() %>%
+        group_by(!!group) %>%
+        count() %>%
+        arrange(desc(.data$n)) %>%
+        ungroup() %>%
         treemap::treemap(index = index,
                 vSize = sizeby,
                 type = type,
