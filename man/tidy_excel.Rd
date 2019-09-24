@@ -4,12 +4,14 @@
 \alias{tidy_excel}
 \title{Import Tidy Excel Sheets into R}
 \usage{
-tidy_excel(file, ...)
+tidy_excel(file, ..., flatten = FALSE)
 }
 \arguments{
 \item{file}{\strong{.xls} or \strong{.xlsx} file}
 
 \item{...}{arguments passed down to \link[readxl:read_excel]{read_excel()}}
+
+\item{flatten}{should output be displayed in tidy format for \code{TRUE}?}
 }
 \value{
 A \link[tibble]{tibble}
@@ -25,7 +27,8 @@ This function wraps the steps for importing excel files having more
   arguments. \emph{sheetName} column will therefore be omitted.
 }
 \examples{
-tidy_excel(readxl::readxl_example("type-me.xlsx"))
+library(readxl)
+tidy_excel(readxl_example("type-me.xlsx"))
 }
 \seealso{
 \itemize{ \item \link[dplyr]{mutate} \item \link[purrr]{map} }
