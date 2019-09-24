@@ -4,14 +4,31 @@
 \alias{tidy_excel}
 \title{Import Tidy Excel Sheets into R}
 \usage{
-tidy_excel(file, ..., flatten = FALSE)
+tidy_excel(file, flatten = FALSE, col_names, col_types, na, trim_ws,
+  skip, ...)
 }
 \arguments{
 \item{file}{\strong{.xls} or \strong{.xlsx} file}
 
-\item{...}{arguments passed down to \link[readxl:read_excel]{read_excel()}}
-
 \item{flatten}{should output be displayed in tidy format for \code{TRUE}?}
+
+\item{col_names}{\code{TRUE} to use the first row as column names,
+\code{FALSE} to get default names}
+
+\item{col_types}{Default as \code{NULL} to guess all from the spreadsheet or
+a character vector containing one entry per column from these options:
+"skip", "guess", "logical", "numeric", "date", "text" or "list".}
+
+\item{na}{Character vector of strings to interpret as missing values. By
+default, readxl treats blank cells as missing data}
+
+\item{trim_ws}{Should leading and trailing whitespace be trimmed?}
+
+\item{skip}{Minimum number of rows to skip before reading anything, be it
+column names or data. Leading empty rows are automatically skipped, so this
+is a lower bound. Ignored if range is given.}
+
+\item{...}{other arguments to pass down to \code{\link[readxl]{read_excel}}}
 }
 \value{
 A \link[tibble]{tibble}
@@ -31,5 +48,5 @@ library(readxl)
 tidy_excel(readxl_example("type-me.xlsx"))
 }
 \seealso{
-\itemize{ \item \link[dplyr]{mutate} \item \link[purrr]{map} }
+\link[readxl]{read_excel}
 }

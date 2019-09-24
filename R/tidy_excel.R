@@ -1,8 +1,20 @@
 #' Import Tidy Excel Sheets into R
 #'
 #' @param file \strong{.xls} or \strong{.xlsx} file
-#' @param ... arguments passed down to \link[readxl:read_excel]{read_excel()}
 #' @param flatten should output be displayed in tidy format for \code{TRUE}?
+#' @param col_names \code{TRUE} to use the first row as column names,
+#'   \code{FALSE} to get default names
+#' @param col_types Default as \code{NULL} to guess all from the spreadsheet or
+#'   a character vector containing one entry per column from these options:
+#'   "skip", "guess", "logical", "numeric", "date", "text" or "list".
+#' @param na Character vector of strings to interpret as missing values. By
+#'   default, readxl treats blank cells as missing data
+#' @param trim_ws Should leading and trailing whitespace be trimmed?
+#' @param skip 	Minimum number of rows to skip before reading anything, be it
+#'   column names or data. Leading empty rows are automatically skipped, so this
+#'   is a lower bound. Ignored if range is given.
+#' @param ... other arguments to pass down to \code{\link[readxl]{read_excel}}
+#' @inheritParams readxl::read_excel
 #'
 #' @details This function wraps the steps for importing excel files having more
 #'   than 1 sheet through \code{mutate()} a \emph{sheetName} column after
@@ -12,7 +24,7 @@
 #'
 #' @return A \link[tibble]{tibble}
 #'
-#' @seealso \itemize{ \item \link[dplyr]{mutate} \item \link[purrr]{map} }
+#' @seealso \link[readxl]{read_excel}
 #' @importFrom dplyr group_split
 #' @importFrom readxl excel_sheets read_excel
 #' @importFrom purrr map_df map
@@ -22,7 +34,7 @@
 #' @examples
 #' library(readxl)
 #' tidy_excel(readxl_example("type-me.xlsx"))
-tidy_excel <- function(file, ..., flatten = FALSE) {
+tidy_excel <- function(file, flatten = FALSE, col_names, col_types, na, trim_ws, skip, ...) {
         file_suffix <- regmatches(file, regexpr("[^.]+$(.*)", file))
         if(!grepl("\\.xls?(.)$", file)) {
                 stop(paste("\nExpects xls or xlsx file but",
